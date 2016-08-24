@@ -1,0 +1,7 @@
+.idea/
+_gsdata_/
+out/
+*.iml
+*.txt
+src\JavaRushPlugin.properties
+src\Solution.java

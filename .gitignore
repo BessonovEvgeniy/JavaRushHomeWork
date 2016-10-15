@@ -3,5 +3,5 @@ _gsdata_/
 out/
 *.iml
 *.txt
-src\JavaRushPlugin.properties
-src\Solution.java
+src/JavaRushPlugin.properties
+src/Solution.java

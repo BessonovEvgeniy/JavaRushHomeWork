@@ -27,67 +27,105 @@ id productName price quantity
 import java.io.*;
 
 public class Solution {
-    public static void main(String[] args) throws Exception {
-        String option = args[0];
-        String id = "";
-        String productName = "";
-        String price;
-        String quantity;
-        String record;
-        //Парсинг введенных данных
-        if (option.equals("-u")) {
+    abstract class CrUD {
+        //Преобразование данных параметров согласно требуемому формату
+        abstract void readParams(String[] args);
+        abstract String readFileName();
+        abstract void updateData(String fileName, String record, String id) throws IOException;
+    }
+    public class DoTask extends CrUD{
+        private String option;
+        private String id = "";
+        private StringBuilder productName = new StringBuilder();
+        private String price;
+        private String quantity;
+        private String record = "";
+        private String fileName = "";
+        private int posId = 0;
+        DoTask(String[] args) throws IOException{
+            readParams(args);
+            fileName = readFileName();
+            updateData(fileName,record,id);
+        }
+        //--------------------------------------------------------------------------------------------------------------
+        public void readParams(String[] args){
+            option= args[0];
             id = args[1];
-            for (int i = 2; i < args.length-2; i++){
-                productName = productName + args[i] + " ";
+            if (option.equals("-u")) {
+                for (int i = 2; i < args.length - 2; i++) {
+                    productName.append(args[i] + " ");
+                }
+                productName.deleteCharAt(productName.length()-1);
+                price = args[args.length - 2];
+                quantity = args[args.length - 1];
+                //-----------------------Проверка введенных данных на корректность ввода--------------------------------
+                if (productName.length() > 30) {
+                    productName.substring(0,29);
+                }
+                if (price.length() > 8) {
+                    price = price.substring(0, 8);
+                }
+                if (quantity.length() > 4) {
+                    quantity = quantity.substring(0, 4);
+                }
+                //--------------------------------Финальная строка для записи-------------------------------------------
+                record = String.format("%-8s%-30s%-8s%-4s%n",id,productName,price,quantity);
             }
-            productName = productName.substring(0,productName.length()-1);//Удаление последнего пробела
-            price = args[args.length-2];
-            quantity = args[args.length-1];
-            //Проверка введенных данных на корректность ввода
-            if (productName.length() > 30) {
-                productName = productName.substring(0, 30);
-            }
-            if (price.length() > 8) {
-                price = price.substring(0, 8);
-            }
-            if (quantity.length() > 4) {
-                quantity = quantity.substring(0, 4);
+            else if(option.equals("-d")){
+                //----------------------------------Пустая строка для записи--------------------------------------------
+                record = "";
             }
         }
-        //Чтение имени файла для парсинга
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        String fileName = reader.readLine();
-        //Работа с файлом
-        FileReader infile = new FileReader(fileName);
-        BufferedReader fileReader = new BufferedReader(infile);
-        //Преобразование данных к необходимому типу данных
-        String line;
-        String idTemp;
-        while ((line = fileReader.readLine()) != null) {
-            idTemp = line.substring(0,8).replaceAll("\\s+","");
-            if (id.equals(idTemp)){
-                fileReader.close();
-                infile.close();
+        //--------------------------------------------------------------------------------------------------------------
+        public String readFileName(){
+            String fileName = "";
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                fileName = reader.readLine();
                 reader.close();
-                if (option.equals("-d")){
-
-                }
-                else if (option.equals("-u")){
-
-                }
             }
+            catch(IOException exc){}
+            return fileName;
         }
-
-        //Максимальный id + 1
-        id++;
-        //Преобразование данных к необходимому формату. Добавляем пробелы.
-        record = String.format("%-8s%-30s%-8s%-4s",id,productName,price,quantity);
-        //Запись данных в файл
-        FileWriter outfile = new FileWriter(fileName,true);
-        BufferedWriter writer = new BufferedWriter(outfile);
-        writer.newLine();
-        writer.write(record);
-        writer.close();
-        outfile.close();
+        //--------------------------------------------------------------------------------------------------------------
+        public int findId(String fileName, String id) throws IOException{
+            int posId = 0;
+            String line;
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            while ((line = reader.readLine()) != null) {
+                if (line.split(" ")[0].equals(id)) {
+                    break;
+                }
+                posId++;
+            }
+            reader.close();
+            return posId;
+        }
+        //--------------------------------------------------------------------------------------------------------------
+        public void updateData(String fileName, String record, String id) throws IOException {
+            int posId = findId(fileName,id);
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            StringBuilder outString = new StringBuilder();
+            String line;
+            int stringCounter = 0;
+            while((line = reader.readLine()) != null){
+                if (stringCounter == posId){
+                    outString.append(record);
+                }
+                else{
+                    outString.append(line+"\n");
+                }
+                stringCounter++;
+            }
+            reader.close();
+            //Блок записи новой строки
+            FileOutputStream outFile = new FileOutputStream(fileName);
+            outFile.write(outString.toString().getBytes());
+            outFile.close();
+        }
+    }
+    public static void main(String[] args) throws Exception {
+        Solution solution = new Solution();
+        CrUD crUD = solution.new DoTask(args);
     }
 }

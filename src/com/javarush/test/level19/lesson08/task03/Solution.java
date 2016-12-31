@@ -25,7 +25,6 @@ public class Solution {
         PrintStream stream = new PrintStream(outputStream);
 
         System.setOut(stream);
-
         testString.printSomething();
 
         String line = outputStream.toString();

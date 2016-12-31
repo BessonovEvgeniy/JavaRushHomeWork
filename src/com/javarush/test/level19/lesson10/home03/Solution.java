@@ -29,7 +29,6 @@ public class Solution {
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(args[0])));
 
-            Date date;
             Calendar cal = Calendar.getInstance();
 
             while (reader.ready()){
